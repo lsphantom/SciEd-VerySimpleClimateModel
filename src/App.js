@@ -1,24 +1,25 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+
+import Sidebar from './Sidebar';
+import GraphArea from './GraphArea';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div id="vscm" className="container">
+          <div className="titles">
+            <h1>How much will our world warm?</h1>
+            <h2>Use this model to make a prediction.</h2>
+          </div>
+
+          <div className="row">
+            <Sidebar />
+            <GraphArea />
+          </div>
+
+          <div className="footer"></div>
+      </div>
     </div>
   );
 }
