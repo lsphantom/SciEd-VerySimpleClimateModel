@@ -3,7 +3,6 @@ import Switch from '@material-ui/core/Switch';
 import Slider from '@material-ui/core/Slider';
 import Checkbox from '@material-ui/core/Checkbox';
 import { withStyles } from '@material-ui/core/styles';
-import { purple } from '@material-ui/core/colors';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
@@ -13,15 +12,7 @@ class Sidebar extends Component {
     
 render(){
 const TempSwitch = withStyles({
-switchBase: {
-    color: purple[300],
-    '&$checked': {
-    color: purple[500],
-    },
-    '&$checked + $track': {
-    backgroundColor: purple[500],
-    },
-},
+switchBase: {},
 checked: {},
 track: {},
 })(Switch);
