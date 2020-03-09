@@ -7,16 +7,39 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import SkipNextIcon from '@material-ui/icons/SkipNext';
+
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+
+
+
 
 
 class Sidebar extends Component {
-    
+  state = { 
+      climateSensitivity: 3, 
+      tempScale: false
+  }
+  
 render(){
+
 const TempSwitch = withStyles({
-switchBase: {},
+switchBase: {
+    color: '#138785',
+        '&$checked': { color: '#27baaf'},
+        '&$checked + $track': { backgroundColor: '#138785'}
+},
 checked: {},
 track: {},
 })(Switch);
+
+
+const handleCSChange = event => {
+    this.setState({climateSensitivity: event.target.value});
+};
 
 function valuetext(value) {
     return `${value}`;
@@ -25,21 +48,26 @@ function valuetext(value) {
         return(
             <div id="sidebar" className="col-sm-4">
                 <div className="base-panel">
-                <p className="sidebar-title">Temperature Scale:</p>
+                <p className="hook-text"><em>What will the temperature be in the future? Make a prediction using this model.</em></p>
+                
+                <div className="sidebar-block">
+                <p className="sidebar-title">Temperature scale:</p>
                 <Typography component="div">
                     <Grid component="label" container alignItems="center" spacing={1}>
                     <Grid item>&deg;C</Grid>
                     <Grid item>
                     <TempSwitch
-                        checked
-                        value="checkedA"
+                        value={this.state.tempScale}
                     />
                     </Grid>
                     <Grid item>&deg;F</Grid>
                     </Grid>
                 </Typography>
+                </div>
 
-                <p className="sidebar-title">Carbon Dioxide Emissions:</p>
+
+                <div className="sidebar-block">
+                <p className="sidebar-title">Select an emissions rate:</p>
                 <Typography component="div">
                 <Slider
                     defaultValue={10.5}
@@ -54,9 +82,10 @@ function valuetext(value) {
                 />
                 Gigatons Carbon per Year
                 </Typography>
+                </div>
 
-
-                <p className="sidebar-title">Choose the graphs you want to see:</p>
+                <div className="sidebar-block">
+                <p className="sidebar-title">Choose the graphs <br/>you want to see:</p>
                 <FormControlLabel
                     value="co2 emission rate"
                     control={<Checkbox color="primary" />}
@@ -72,16 +101,40 @@ function valuetext(value) {
                     control={<Checkbox color="primary" />}
                     label="Temperature"
                 />
+                </div>
+                
 
-                <p className="sidebar-title">+ Change climate sensitivity:</p>
+                <div className="sidebar-block">
+                <p className="sidebar-title">Change climate sensitivity:</p>
+                <Typography>
+                    <FormControl>
+                        <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={this.state.climateSensitivity}
+                        onChange={handleCSChange}
+                        >
+                        <MenuItem value={2}>2 degrees Celsius</MenuItem>
+                        <MenuItem value={2.5}>2.5 degrees Celsius</MenuItem>
+                        <MenuItem value={3}>3 degrees Celsius</MenuItem>
+                        <MenuItem value={4}>4 degrees Celsius</MenuItem>
+                        <MenuItem value={4.5}>4.5 degrees Celsius</MenuItem>
+                        <MenuItem value={5}>5 degrees Celsius</MenuItem>
+                        </Select>
+                    </FormControl>
+                  </Typography>
+                </div>
 
-                <Button variant="contained" color="primary">
-                >|
+                <div className="sidebar-buttons">
+                <Button className="skip-button" variant="contained" color="primary" title="Step Forward">
+                    <SkipNextIcon />
                 </Button>
 
-                <Button variant="contained" color="primary">
-                >
+                <Button className="play-button" variant="contained" color="primary" title="Go">
+                    <PlayArrowIcon />
                 </Button>
+                </div>
+
                 </div>
             </div>
         )

@@ -19,13 +19,31 @@ body {
   font-weight: bold;
 }
 .base-panel {
-  min-height: 500px;
+  min-height: 640px;
 }
 #chartdiv {
-  height: 460px;
+  height: 580px;
 }
-
+.sidebar-block {
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
 .sidebar-title {
   font-weight: bold;
   margin-top: 10px;
+  margin-bottom: 0px;
+}
+.sidebar-buttons {
+  text-align: center;
+}
+.sidebar-buttons button {
+  margin: 10px;
+}
+.logo {
+  margin: 15px auto;
+  width: 350px;
+}
+.hook-text {
+  font-size: 14px;
+  line-height: 14px;
 }

@@ -4,68 +4,35 @@ import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 
 class GraphArea extends Component {
-
+   
     componentDidMount(){
             am4core.useTheme(am4themes_animated);
           
             // Create chart instance
             var chart = am4core.create("chartdiv", am4charts.XYChart);
             
-            // Add data
-            chart.data = [{
-              "date": new Date(1960, 0, 1),
-              "value": 0,
-              "value2": 362,
-              "value3": 699
-            }, {
-              "date": new Date(1970, 0, 1),
-              "value": 4,
-              "value2": 450,
-              "value3": 841
-            }, {
-              "date": new Date(1980, 0, 1),
-              "value": 8,
-              "value2": 358,
-              "value3": 699
-            }, {
-              "date": new Date(1990, 0, 1),
-              "value": 12,
-              "value2": 367,
-              "value3": 500
-            }, {
-              "date": new Date(2000, 0, 1),
-              "value": 16,
-              "value2": 485,
-              "value3": 369
-            }, {
-              "date": new Date(2010, 0, 1),
-              "value": 20,
-              "value2": 354,
-              "value3": 250
-            }, {
-              "date": new Date(2020, 0, 1),
-              "value": 24,
-              "value2": 350,
-              "value3": 600
-            }];
+            // Initial data
+            chart.data = this.props.data;
             
             // Create axes
             var categoryAxis = chart.xAxes.push(new am4charts.DateAxis());
             categoryAxis.renderer.grid.template.location = 0;
             categoryAxis.renderer.minGridDistance = 30;
+            categoryAxis.dateFormats.setKey("yyyy");
             
             
             // Create series
-            function createSeriesAndAxis(field, name, topMargin, bottomMargin) {
+            function createSeriesAndAxis(field, name, topMargin, bottomMargin, bulletOutline, bulletFill, bulletType) {
               var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
               
               var series = chart.series.push(new am4charts.LineSeries());
               series.dataFields.valueY = field;
-              series.dataFields.dateX = "date";
+              series.dataFields.dateX = "year";
               series.name = name;
               series.tooltipText = "{dateX}: [b]{valueY}[/]";
               series.strokeWidth = 2;
               series.yAxis = valueAxis;
+              series.stroke = bulletOutline;
               
               valueAxis.renderer.line.strokeOpacity = 1;
               valueAxis.renderer.line.stroke = series.stroke;
@@ -87,15 +54,48 @@ class GraphArea extends Component {
                   valueAxis.marginBottom = 20;
                 }
               }
-              
-              var bullet = series.bullets.push(new am4charts.CircleBullet());
-              bullet.circle.stroke = am4core.color("#fff");
-              bullet.circle.strokeWidth = 2;
+
+              switch (bulletType) {
+                case "circle":
+                  var bullet = series.bullets.push(new am4charts.CircleBullet());
+                  bullet.circle.stroke = am4core.color(bulletOutline);
+                  bullet.circle.fill = bulletFill;
+                  bullet.circle.strokeWidth = 2;
+                break;
+
+                case "square":
+                  var bullet2 = series.bullets.push(new am4charts.Bullet());
+                  let square = bullet2.createChild(am4core.Rectangle);
+                  square.width = 8;
+                  square.height = 8;
+                  square.horizontalCenter = "middle";
+                  square.verticalCenter = "middle";
+                  square.stroke = bulletOutline;
+                  square.fill = bulletFill;
+                  square.strokeWidth = 2;
+                break;
+
+                case "triangle":
+                  var bullet3 = series.bullets.push(new am4charts.Bullet());
+                  let arrow = bullet3.createChild(am4core.Triangle);
+                  arrow.width = 10;
+                  arrow.height = 10;
+                  arrow.horizontalCenter = "middle";
+                  arrow.verticalCenter = "middle";
+                  arrow.stroke = bulletOutline;
+                  arrow.fill = bulletFill;
+                  arrow.strokeWidth = 2;
+                break;
+                
+                default:
+                break;
+              }
+
             }
             
-            createSeriesAndAxis("value", "Series #1", false, true);
-            createSeriesAndAxis("value2", "Series #2", true, true);
-            createSeriesAndAxis("value3", "Series #3", true, false);
+            createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#fff", "triangle");
+            createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "circle");
+            createSeriesAndAxis("temp", "Temperature", true, false, "#6a124f", "#ff0000", "square");
             
             chart.legend = new am4charts.Legend();
             chart.cursor = new am4charts.XYCursor();
