@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
 
 
 class Sidebar extends Component {
@@ -30,7 +31,7 @@ function valuetext(value) {
                     <Grid item>&deg;C</Grid>
                     <Grid item>
                     <TempSwitch
-                        checked="false"
+                        checked
                         value="checkedA"
                     />
                     </Grid>
@@ -71,6 +72,16 @@ function valuetext(value) {
                     control={<Checkbox color="primary" />}
                     label="Temperature"
                 />
+
+                <p className="sidebar-title">+ Change climate sensitivity:</p>
+
+                <Button variant="contained" color="primary">
+                >|
+                </Button>
+
+                <Button variant="contained" color="primary">
+                >
+                </Button>
                 </div>
             </div>
         )
