@@ -20,8 +20,9 @@ import Select from '@material-ui/core/Select';
 
 class Sidebar extends Component {
   state = { 
-      climateSensitivity: 3, 
-      tempScale: false
+      tempScale: false,
+      emissionRate: 10.5,
+      climateSensitivity: 3
   }
   
 render(){
@@ -36,6 +37,13 @@ checked: {},
 track: {},
 })(Switch);
 
+const handleTSChange = event => {
+    this.setState({tempScale: !this.state.tempScale});
+}
+
+const handleERChange = (event, newValue) => {
+    this.setState({emissionRate: newValue});
+}
 
 const handleCSChange = event => {
     this.setState({climateSensitivity: event.target.value});
@@ -43,7 +51,8 @@ const handleCSChange = event => {
 
 function valuetext(value) {
     return `${value}`;
-  }
+}
+
 
         return(
             <div id="sidebar" className="col-sm-4">
@@ -57,7 +66,9 @@ function valuetext(value) {
                     <Grid item>&deg;C</Grid>
                     <Grid item>
                     <TempSwitch
-                        value={this.state.tempScale}
+                        checked={this.state.tempScale} //false = C, true = F
+                        value="tempScale"
+                        onChange={handleTSChange}
                     />
                     </Grid>
                     <Grid item>&deg;F</Grid>
@@ -71,6 +82,7 @@ function valuetext(value) {
                 <Typography component="div">
                 <Slider
                     defaultValue={10.5}
+                    value={this.state.emissionRate}
                     getAriaValueText={valuetext}
                     aria-labelledby="discrete-slider-small-steps"
                     step={0.2}
@@ -79,6 +91,7 @@ function valuetext(value) {
                     max={30}
                     valueLabelDisplay="on"
                     track="inverted"
+                    onChange={handleERChange}
                 />
                 Gigatons Carbon per Year
                 </Typography>
@@ -106,23 +119,21 @@ function valuetext(value) {
 
                 <div className="sidebar-block">
                 <p className="sidebar-title">Change climate sensitivity:</p>
-                <Typography>
-                    <FormControl>
-                        <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        value={this.state.climateSensitivity}
-                        onChange={handleCSChange}
-                        >
-                        <MenuItem value={2}>2 degrees Celsius</MenuItem>
-                        <MenuItem value={2.5}>2.5 degrees Celsius</MenuItem>
-                        <MenuItem value={3}>3 degrees Celsius</MenuItem>
-                        <MenuItem value={4}>4 degrees Celsius</MenuItem>
-                        <MenuItem value={4.5}>4.5 degrees Celsius</MenuItem>
-                        <MenuItem value={5}>5 degrees Celsius</MenuItem>
-                        </Select>
-                    </FormControl>
-                  </Typography>
+                <FormControl>
+                    <Select
+                    labelId="cs-selector"
+                    id="cs-selector"
+                    value={this.state.climateSensitivity}
+                    onChange={handleCSChange}
+                    >
+                    <MenuItem value={2}>2 degrees Celsius</MenuItem>
+                    <MenuItem value={2.5}>2.5 degrees Celsius</MenuItem>
+                    <MenuItem value={3}>3 degrees Celsius</MenuItem>
+                    <MenuItem value={4}>4 degrees Celsius</MenuItem>
+                    <MenuItem value={4.5}>4.5 degrees Celsius</MenuItem>
+                    <MenuItem value={5}>5 degrees Celsius</MenuItem>
+                    </Select>
+                </FormControl>
                 </div>
 
                 <div className="sidebar-buttons">

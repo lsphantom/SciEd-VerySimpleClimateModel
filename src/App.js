@@ -65,7 +65,7 @@ class App extends Component {
      "co2Emissions": 9.84,
      "co2Concentration": 389.85,
      "temp": 14.451
-   }]
+   }, ]
   }
 
 
@@ -88,7 +88,54 @@ class App extends Component {
 
   addDataPoint () {
 
+/* TEMP NULL DATA
+    "year": new Date(2020, 0, 1),
+    "co2Emissions": null,
+    "co2Concentration": null,
+    "temp": null
+  }, {
+    "year": new Date(2030, 0, 1),
+    "co2Emissions": null,
+    "co2Concentration": null,
+    "temp": null
+  }, {
+    "year": new Date(2040, 0, 1),
+    "co2Emissions": null,
+    "co2Concentration": null,
+    "temp": null
+  }, {
+    "year": new Date(2050, 0, 1),
+    "co2Emissions": null,
+    "co2Concentration": null,
+    "temp": null
+  }, {
+    "year": new Date(2060, 0, 1),
+    "co2Emissions": null,
+    "co2Concentration": null,
+    "temp": null
+  }, {
+    "year": new Date(2070, 0, 1),
+    "co2Emissions": null,
+    "co2Concentration": null,
+    "temp": null
+  }, {
+    "year": new Date(2080, 0, 1),
+    "co2Emissions": null,
+    "co2Concentration": null,
+    "temp": null
+  }, {
+    "year": new Date(2090, 0, 1),
+    "co2Emissions": null,
+    "co2Concentration": null,
+    "temp": null
+  }, {
+    "year": new Date(2100, 0, 1),
+    "co2Emissions": null,
+    "co2Concentration": null,
+    "temp": null
+  */
   }
+
 
   render () {
     return (

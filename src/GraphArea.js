@@ -17,10 +17,14 @@ class GraphArea extends Component {
             // Create axes
             var categoryAxis = chart.xAxes.push(new am4charts.DateAxis());
             categoryAxis.renderer.grid.template.location = 0;
-            categoryAxis.renderer.minGridDistance = 30;
+            categoryAxis.renderer.minGridDistance = 40;
             categoryAxis.dateFormats.setKey("yyyy");
+            categoryAxis.renderer.labels.template.location = 0;
+            categoryAxis.renderer.labels.template.fontSize = 12;
+            //categoryAxis.renderer.labels.template.rotation = -90;
             
             
+
             // Create series
             function createSeriesAndAxis(field, name, topMargin, bottomMargin, bulletOutline, bulletFill, bulletType) {
               var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
@@ -29,17 +33,19 @@ class GraphArea extends Component {
               series.dataFields.valueY = field;
               series.dataFields.dateX = "year";
               series.name = name;
-              series.tooltipText = "{dateX}: [b]{valueY}[/]";
+              series.tooltipText = "{name}: [b]{valueY}[/]";
               series.strokeWidth = 2;
               series.yAxis = valueAxis;
               series.stroke = bulletOutline;
+              series.fill = bulletFill;
               
               valueAxis.renderer.line.strokeOpacity = 1;
               valueAxis.renderer.line.stroke = series.stroke;
               valueAxis.renderer.grid.template.stroke = series.stroke;
               valueAxis.renderer.grid.template.strokeOpacity = 0.1;
               valueAxis.renderer.labels.template.fill = series.stroke;
-              valueAxis.renderer.minGridDistance = 20;
+              valueAxis.renderer.minGridDistance = 50;
+              valueAxis.renderer.labels.template.fontSize = 12;
               valueAxis.align = "right";
               
               if (topMargin && bottomMargin) {
@@ -86,22 +92,38 @@ class GraphArea extends Component {
                   arrow.fill = bulletFill;
                   arrow.strokeWidth = 2;
                 break;
-                
+
                 default:
                 break;
               }
+
+
+              // Create Warning Limit Guides
+              var limitGuide = valueAxis.axisRanges.create();
+                  limitGuide.value = 14.1;
+                  limitGuide.grid.stroke = "orange"
+                  limitGuide.grid.strokeOpacity = 0.6;
+                  limitGuide.label.text = "RTL";
+                  limitGuide.label.align = "right";
+                  limitGuide.label.verticalCenter = "bottom";
+                  limitGuide.label.fillOpacity = 0.8;
 
             }
             
             createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#fff", "triangle");
             createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "circle");
             createSeriesAndAxis("temp", "Temperature", true, false, "#6a124f", "#ff0000", "square");
+
             
             chart.legend = new am4charts.Legend();
+            //chart.legend.itemContainers.template.clickable = false;
+            //chart.legend.itemContainers.template.focusable = false;
+            //chart.legend.itemContainers.template.cursorOverStyle = am4core.MouseCursorStyle.default;
             chart.cursor = new am4charts.XYCursor();
-            
             chart.leftAxesContainer.layout = "horizontal";
-          
+            
+            
+
     }
 
     render(){
