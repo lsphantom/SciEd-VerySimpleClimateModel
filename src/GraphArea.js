@@ -110,9 +110,9 @@ class GraphArea extends Component {
 
             }
             
-            createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#fff", "triangle");
+            createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#007bff", "triangle");
             createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "circle");
-            createSeriesAndAxis("temp", "Temperature", true, false, "#6a124f", "#ff0000", "square");
+            createSeriesAndAxis("tempC", "Temperature", true, false, "#6a124f", "#ff0000", "square");
 
             
             chart.legend = new am4charts.Legend();
