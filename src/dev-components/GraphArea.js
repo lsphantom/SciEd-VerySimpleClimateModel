@@ -120,10 +120,7 @@ class GraphArea extends Component {
             //chart.legend.itemContainers.template.focusable = false;
             //chart.legend.itemContainers.template.cursorOverStyle = am4core.MouseCursorStyle.default;
             chart.cursor = new am4charts.XYCursor();
-            chart.leftAxesContainer.layout = "horizontal";
-            
-            
-
+            chart.leftAxesContainer.layout = "horizontal";     
     }
 
     render(){
