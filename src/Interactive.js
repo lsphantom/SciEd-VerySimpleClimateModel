@@ -38,9 +38,12 @@ class Interactive extends Component {
 
   //Initial State (HISTORIC DATA)
   state = {
-    tempScale: false,
+    tempScaleCelsius: true,
     emissionRate: 10.5,
     climateSensitivity: 3,
+    displayEmissions: true,
+    displayCO2: true,
+    displayTemperature: true,
     data : [{
      "year": new Date(1960, 0, 1),
      "co2Emissions": 4.14,
@@ -120,7 +123,7 @@ handleERChange = (event, newValue) => {
 }
 
 handleGraphsToDisplay = (event) => {
-
+  this.setState({[event.target.value]: event.target.checked})
 }
 
 handleCSChange = event => {
@@ -148,19 +151,29 @@ valuetext(value) {
   addSingleDataPoint (event) {
     event.preventDefault();
     const currentData = this.state.data;
+    const currentEmissionRate = this.state.emissionRate;
+    const currentClimateSensitivity = this.state.climateSensitivity;
     const currentDataSize = currentData.length;
-    const lastDate = currentData[currentDataSize -1].year;
-    const lastYear = lastDate.getFullYear();
-    const lastTemp = currentData[currentDataSize -1].tempC;
-    const lastCO2Concentration = currentData[currentDataSize - 1].co2Concentration;
+    const baselineDate = currentData[currentDataSize -1].year;
+    const baselineYear = baselineDate.getFullYear();
+    const baselineTemp = currentData[currentDataSize -1].tempC;
+    const baselineCO2Concentration = currentData[currentDataSize - 1].co2Concentration;
+    
+    const atmosphericFraction = 0.45; //45% standard
+    const co2RemovalRate = 0.001; //0.1% per year
+    let GtC_per_ppmv = 2.3; // GtC (approx. 2.3 GtC per 1 ppmv)
+    let atomosphereCO2Increase = (1 - atmosphericFraction) * currentEmissionRate;
 
+    let calculatedCO2Concentration = baselineCO2Concentration + (atomosphereCO2Increase / GtC_per_ppmv);
+    let calculatedTemp = baselineTemp + currentClimateSensitivity * Math.log2 (calculatedCO2Concentration / baselineCO2Concentration);
+    let calculatedTempF = this.celsiusToFarenheit(calculatedTemp);
 
     let newDataPoint = {
-        "year": new Date(lastYear + 5, 0, 1),
-        "co2Emissions": this.state.emissionRate,
-        "co2Concentration": 'xx',
-        "tempC": lastTemp + this.state.climateSensitivity * Math.LOG2E * Math.log(1 / lastCO2Concentration),
-        "tempF": 'xx'
+        "year": new Date(baselineYear + 5, 0, 1),
+        "co2Emissions": currentEmissionRate,
+        "co2Concentration": calculatedCO2Concentration,
+        "tempC": calculatedTemp,
+        "tempF": calculatedTempF
     }
 
     this.setState({
@@ -291,9 +304,15 @@ valuetext(value) {
 
     }
     
-    //createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#007bff", "triangle");
-    //createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "circle");
-    createSeriesAndAxis("tempC", "Temperature", true, false, "#6a124f", "#ff0000", "square");
+    createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#007bff", "triangle");
+    createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "circle");
+
+    if (this.state.tempScaleCelsius) {
+      createSeriesAndAxis("tempC", "Temperature", true, false, "#6a124f", "#ff0000", "square");
+    } else {
+      createSeriesAndAxis("tempF", "Temperature", true, false, "#6a124f", "#ff0000", "square");
+    }
+    
 
     
     chart.legend = new am4charts.Legend();
@@ -319,15 +338,15 @@ valuetext(value) {
                 <p className="sidebar-title">Temperature scale:</p>
                 <Typography component="div">
                     <Grid component="label" container alignItems="center" spacing={1}>
-                    <Grid item>&deg;C</Grid>
+                    <Grid item>&deg;F</Grid>
                     <Grid item>
                     <TempSwitch
                         checked={this.state.tempScale}
-                        value="tempScale"
+                        value="tempScaleCelsius"
                         onChange={this.handleTSChange}
                     />
                     </Grid>
-                    <Grid item>&deg;F</Grid>
+                    <Grid item>&deg;C</Grid>
                     </Grid>
                 </Typography>
                 </div>
@@ -356,19 +375,21 @@ valuetext(value) {
                 <div className="sidebar-block">
                 <p className="sidebar-title">Choose the graphs <br/>you want to see:</p>
                 <FormControlLabel
-                    value="co2 emission rate"
-                    control={<Checkbox color="primary" />}
+                    value="displayEmissions"
+                    control={<Checkbox color="primary" checked={this.state.displayEmissions} onChange={this.handleGraphsToDisplay} />}
                     label="CO2 Emission Rate"
                 />
                 <FormControlLabel
-                    value="co2 concentration"
-                    control={<Checkbox color="primary" />}
+                    value="displayCO2"
+                    control={<Checkbox color="primary" checked={this.state.displayCO2} onChange={this.handleGraphsToDisplay} />}
                     label="CO2 Concentration"
+                    onChange={this.handleGraphsToDisplay}
                 />
                 <FormControlLabel
-                    value="temperature"
-                    control={<Checkbox color="primary" />}
+                    value="displayTemperature"
+                    control={<Checkbox color="primary" checked={this.state.displayTemperature} onChange={this.handleGraphsToDisplay} />}
                     label="Temperature"
+                    onChange={this.handleGraphsToDisplay}
                 />
                 </div>
                 
