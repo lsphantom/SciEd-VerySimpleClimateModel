@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import DataTable from './DataTable';
 
 import Switch from '@material-ui/core/Switch';
 import Slider from '@material-ui/core/Slider';
@@ -134,8 +135,6 @@ valuetext(value) {
     return `${value}`;
 }
 
-
-
   //Switch between Celsius or Farenheit
   changeTempScale () {
 
@@ -203,13 +202,13 @@ valuetext(value) {
     am4core.useTheme(am4themes_animated);
   
     // Create chart instance
-    var chart = am4core.create("chartdiv", am4charts.XYChart);
+    let chart = am4core.create("chartdiv", am4charts.XYChart);
     
     // Initial data
     chart.data = this.state.data;
     
     // Create axes
-    var categoryAxis = chart.xAxes.push(new am4charts.DateAxis());
+    let categoryAxis = chart.xAxes.push(new am4charts.DateAxis());
     categoryAxis.renderer.grid.template.location = 0;
     categoryAxis.renderer.minGridDistance = 40;
     categoryAxis.dateFormats.setKey("yyyy");
@@ -430,6 +429,10 @@ valuetext(value) {
                 <div className="base-panel">
                     <div id="chartdiv"></div>
                 </div>
+            </div>
+
+            <div className="row">
+              <DataTable data={this.state.data} />
             </div>
           </div>
       );
