@@ -23,10 +23,10 @@ render() {
                 {data.map((item, i) => (
                    <tr key={i}>
                        <td>{(item.year).getFullYear()}</td>
-                       <td>{item.co2Concentration}</td>
+                       <td>{parseFloat(item.co2Concentration).toFixed(3)}</td>
                        <td>{item.co2Emissions}</td>
-                       <td>{item.tempC}</td>
-                       <td>{item.tempF}</td>
+                       <td>{parseFloat(item.tempC).toFixed(3)}</td>
+                       <td>{parseFloat(item.tempF).toFixed(3)}</td>
                    </tr>)
                 )}
             </tbody>
