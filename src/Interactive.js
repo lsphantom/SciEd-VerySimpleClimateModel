@@ -18,7 +18,7 @@ import Select from '@material-ui/core/Select';
 
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
-import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+//import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 
 
 const TempSwitch = withStyles({
@@ -111,7 +111,7 @@ class Interactive extends Component {
      "co2Concentration": 389.85,
      "tempC": 14.451,
      "tempF": 58.012
-   }, ]
+   }]
   }
 
 //SIDEBAR HANDLES
@@ -159,7 +159,7 @@ valuetext(value) {
     const baselineCO2Concentration = currentData[currentDataSize - 1].co2Concentration;
     
     const atmosphericFraction = 0.45; //45% standard
-    const co2RemovalRate = 0.001; //0.1% per year
+    //const co2RemovalRate = 0.001; //0.1% per year
     let GtC_per_ppmv = 2.3; // GtC (approx. 2.3 GtC per 1 ppmv)
     let atomosphereCO2Increase = (1 - atmosphericFraction) * currentEmissionRate;
 
@@ -199,7 +199,7 @@ valuetext(value) {
   
 
   componentDidMount(){
-    am4core.useTheme(am4themes_animated);
+    //am4core.useTheme(am4themes_animated);
   
     // Create chart instance
     let chart = am4core.create("chartdiv", am4charts.XYChart);
@@ -240,6 +240,7 @@ valuetext(value) {
       valueAxis.renderer.minGridDistance = 50;
       valueAxis.renderer.labels.template.fontSize = 12;
       valueAxis.align = "right";
+      valueAxis.min = 0;
       
       if (topMargin && bottomMargin) {
         valueAxis.marginTop = 10;
@@ -321,6 +322,13 @@ valuetext(value) {
     chart.cursor = new am4charts.XYCursor();
     chart.leftAxesContainer.layout = "horizontal";  
 
+
+    this.chart = chart;
+
+}
+
+componentDidUpdate(oldProps) {
+  this.chart.data = this.state.data;
 }
 
 
