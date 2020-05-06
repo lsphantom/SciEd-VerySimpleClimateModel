@@ -10,7 +10,9 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import PauseIcon from '@material-ui/icons/Pause';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
+import RotateLeft from '@material-ui/icons/RotateLeft';
 
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
@@ -30,15 +32,13 @@ const TempSwitch = withStyles({
     checked: {},
     track: {},
     })(Switch);
-    
-//const CelsiusText = "&deg;C";
-//const FarenheitText = "&degF";
-
 
 class Interactive extends Component {
 
   //Initial State (HISTORIC DATA)
   state = {
+    ready: true,
+    running: false,
     tempScaleCelsius: true,
     emissionRate: 10.5,
     climateSensitivity: 3,
@@ -114,41 +114,50 @@ class Interactive extends Component {
    }]
   }
 
-//SIDEBAR HANDLES
+//**** SIDEBAR HANDLES */
+//Change Temperature Scale
 handleTSChange = event => {
-    this.setState({tempScale: !this.state.tempScale});
+    this.setState({tempScaleCelsius: !this.state.tempScaleCelsius});
 }
-
+//Change Emission Rate
 handleERChange = (event, newValue) => {
     this.setState({emissionRate: newValue});
 }
-
+//Choose Graphs to Display
 handleGraphsToDisplay = (event) => {
   this.setState({[event.target.value]: event.target.checked})
 }
-
+//Change Climate Sensitivity
 handleCSChange = event => {
-    this.setState({climateSensitivity: event.target.value});
+  this.setState({climateSensitivity: event.target.value});
 };
-
+//Return string value for emissions rate slider
 valuetext(value) {
     return `${value}`;
 }
+//Change Play/Pause Buttons
+handlePlay = event => {
+  this.setState({running: true});
+  this.playInteraction();
+}
+handlePause = event => {
+  this.setState({running: false});
+}
 
-  //Switch between Celsius or Farenheit
-  changeTempScale () {
-
-  }
-
+//**** TEMP SCALE CONVERSIONS */
+  changeTempScale () {}
+  // C to F
   celsiusToFarenheit (value) {
     return (value * 9/5) + 32;
   }
+  // F to C
   farenheitToCelsius (value) {
     return (value - 32) * 5/9;
   }
 
-  addSingleDataPoint (event) {
-    event.preventDefault();
+
+/**** ADD NEW DATA */
+  addSingleDataPoint () {
     const currentData = this.state.data;
     const currentEmissionRate = this.state.emissionRate;
     const currentClimateSensitivity = this.state.climateSensitivity;
@@ -157,9 +166,12 @@ valuetext(value) {
     const baselineYear = baselineDate.getFullYear();
     const baselineTemp = currentData[currentDataSize -1].tempC;
     const baselineCO2Concentration = currentData[currentDataSize - 1].co2Concentration;
-    
+
+
+    let currentDateSet =  new Date(baselineYear + 5, 0, 1); //5yr interavals set
+    let currentYearSet = currentDateSet.getFullYear();
     const atmosphericFraction = 0.45; //45% standard
-    //const co2RemovalRate = 0.001; //0.1% per year
+    const co2RemovalRate = 0.001; //0.1% per year
     let GtC_per_ppmv = 2.3; // GtC (approx. 2.3 GtC per 1 ppmv)
     let atomosphereCO2Increase = (1 - atmosphericFraction) * currentEmissionRate;
 
@@ -168,29 +180,54 @@ valuetext(value) {
     let calculatedTempF = this.celsiusToFarenheit(calculatedTemp);
 
     let newDataPoint = {
-        "year": new Date(baselineYear + 5, 0, 1),
+        "year": currentDateSet,
         "co2Emissions": currentEmissionRate,
         "co2Concentration": calculatedCO2Concentration,
         "tempC": calculatedTemp,
         "tempF": calculatedTempF
     }
 
-    this.setState({
-        data: [...this.state.data, newDataPoint]
-    });
-
-    console.log(this.state.data);
-
-    //Retrieve set vars
     
-
-    //Retrieve last data point
-
-
-    //Create new data point
+    //Max date 2100
+    if (currentYearSet <= 2100) {
+      this.setState({
+        data: [...this.state.data, newDataPoint]
+      });
+    }
+    else {
+      this.setState({
+        ready: false,
+        running: false,
+      })
+    }
 
 
     //Write to visualization
+    this.triggeredComponentUpdate();
+  }
+
+
+  resetVisuals(){
+    //delete data and return to first 50 years (10 data points)
+    let finalData = this.state.data;
+        finalData.length = 11;
+    //return only historic points and restore buttons
+    this.setState({
+      data: finalData,
+      ready: true,
+    });
+    //init graph again
+    this.triggeredComponentUpdate();
+  }
+
+
+  stepForwardInteraction() {
+    this.addSingleDataPoint();
+  }
+
+  playInteraction() {
+    this.addSingleDataPoint();
+    setTimeout(() => this.playInteraction(), 1000);
   }
 
 
@@ -226,7 +263,7 @@ valuetext(value) {
       series.dataFields.valueY = field;
       series.dataFields.dateX = "year";
       series.name = name;
-      series.tooltipText = "{name}: [b]{valueY}[/]" ;
+      series.tooltipText = "[bold]{name}:[/] {valueY}" ;
       series.strokeWidth = 2;
       series.yAxis = valueAxis;
       series.stroke = bulletOutline;
@@ -240,7 +277,7 @@ valuetext(value) {
       valueAxis.renderer.minGridDistance = 50;
       valueAxis.renderer.labels.template.fontSize = 12;
       valueAxis.align = "right";
-      valueAxis.min = 0;
+      //valueAxis.min = 0;
       
       if (topMargin && bottomMargin) {
         valueAxis.marginTop = 10;
@@ -324,12 +361,15 @@ valuetext(value) {
 
 
     this.chart = chart;
-
 }
 
-componentDidUpdate(oldProps) {
+triggeredComponentUpdate() {
   this.chart.data = this.state.data;
 }
+
+/*componentDidUpdate(oldProps) {
+  this.chart.data = this.state.data;
+}*/
 
 
     render() {
@@ -348,7 +388,7 @@ componentDidUpdate(oldProps) {
                     <Grid item>&deg;F</Grid>
                     <Grid item>
                     <TempSwitch
-                        checked={this.state.tempScale}
+                        checked={this.state.tempScaleCelsius}
                         value="tempScaleCelsius"
                         onChange={this.handleTSChange}
                     />
@@ -364,9 +404,9 @@ componentDidUpdate(oldProps) {
                 <Typography component="div">
                 <Slider
                     defaultValue={10.5}
-                    value={this.state.emissionRate}
-                    getAriaValueText={this.valuetext}
-                    aria-labelledby="discrete-slider-small-steps"
+                    //value={this.state.emissionRate}
+                    //getAriaValueText={this.valuetext}
+                    //aria-labelledby="discrete-slider-small-steps"
                     step={0.2}
                     marks
                     min={0}
@@ -420,15 +460,35 @@ componentDidUpdate(oldProps) {
                 </FormControl>
                 </div>
 
+                { this.state.ready
+                ?
                 <div className="sidebar-buttons">
-                <Button className="skip-button" onClick={(event) => this.addSingleDataPoint(event)} variant="contained" color="primary" title="Step Forward">
-                    <SkipNextIcon />
-                </Button>
+                  <Button className="skip-button" onClick={() => this.stepForwardInteraction()} variant="contained" color="primary" title="Step Forward">
+                      <SkipNextIcon />
+                  </Button>
 
-                <Button className="play-button" variant="contained" color="primary" title="Go">
-                    <PlayArrowIcon />
-                </Button>
+                  { this.state.running
+                    ?
+                  <Button className="pause-button" onClick={(event) => this.handlePause(event)} variant="contained" color="primary" title="Pause">
+                    <PauseIcon />
+                  </Button>
+                    :
+                  <Button className="play-button" onClick={(event) => this.handlePlay(event)} variant="contained" color="primary" title="Go">
+                      <PlayArrowIcon />
+                  </Button>
+                  }
+  
+                  <Button className="reset-button" onClick={(event) => this.resetVisuals(event)} variant="contained" color="primary" title="Start Over">
+                      <RotateLeft />
+                  </Button>
                 </div>
+                :
+                <div className="sidebar-buttons">
+                  <Button className="reset-button" onClick={(event) => this.resetVisuals(event)} variant="contained" color="primary" title="Start Over">
+                    <RotateLeft /> Start Over
+                  </Button>
+                </div>
+                }
 
                 </div>
             </div>
@@ -439,7 +499,7 @@ componentDidUpdate(oldProps) {
                 </div>
             </div>
 
-            <div className="row">
+            <div className="row data-wrap">
               <DataTable data={this.state.data} />
             </div>
           </div>

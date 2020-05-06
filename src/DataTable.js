@@ -7,7 +7,7 @@ render() {
     const {data} = this.props;
 
     return (
-        <div>
+        <div className="base-panel data-table">
             <h3>Data Table</h3>
             <table className="table table-responsive">
             <thead>

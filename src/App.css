@@ -51,3 +51,15 @@ body {
 .MuiSlider-root {
   color: #007bff !important;
 }
+
+.data-wrap {
+  text-align: center;
+}
+.data-table {
+  margin: 30px;
+  float: none;
+  text-align: center;
+}
+.data-table table {
+  font-size: 11px;
+}
