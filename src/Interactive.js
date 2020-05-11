@@ -179,6 +179,8 @@ handlePause = event => {
     let calculatedTemp = baselineTemp + currentClimateSensitivity * Math.log2 (calculatedCO2Concentration / baselineCO2Concentration);
     let calculatedTempF = this.celsiusToFarenheit(calculatedTemp);
 
+    //console.log(14.471 + currentClimateSensitivity * Math.log2());
+
     let newDataPoint = {
         "year": currentDateSet,
         "co2Emissions": currentEmissionRate,
