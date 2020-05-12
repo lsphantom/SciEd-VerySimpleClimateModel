@@ -45,68 +45,69 @@ class Interactive extends Component {
     displayEmissions: true,
     displayCO2: true,
     displayTemperature: true,
+    displayDataTable: true,
     data : [{
-     "year": new Date(1960, 0, 1),
+     "year": new Date(1960, 0),
      "co2Emissions": 4.14,
      "co2Concentration": 316.91,
      "tempC": 13.977,
      "tempF": 57.159
    }, {
-     "year": new Date(1965, 0, 1),
+     "year": new Date(1965, 0),
      "co2Emissions": 4.68,
      "co2Concentration": 320.04,
      "tempC": 13.886,
      "tempF": 56.995
    }, {
-     "year": new Date(1970, 0, 1),
+     "year": new Date(1970, 0),
      "co2Emissions": 5.59,
      "co2Concentration": 325.68,
      "tempC": 13.922,
      "tempF": 57.060
    }, {
-     "year": new Date(1975, 0, 1),
+     "year": new Date(1975, 0),
      "co2Emissions": 5.86,
      "co2Concentration": 331.08,
      "tempC": 13.920,
      "tempF": 57.056
    }, {
-     "year": new Date(1980, 0, 1),
+     "year": new Date(1980, 0),
      "co2Emissions": 6.53,
      "co2Concentration": 338.68,
      "tempC": 14.053,
      "tempF": 57.295
    }, {
-     "year": new Date(1985, 0, 1),
+     "year": new Date(1985, 0),
      "co2Emissions": 6.68,
      "co2Concentration": 346.04,
      "tempC": 14.081,
      "tempF": 57.346
    }, {
-     "year": new Date(1990, 0, 1),
+     "year": new Date(1990, 0),
      "co2Emissions": 7.34,
      "co2Concentration": 354.35,
      "tempC": 14.191,
      "tempF": 57.544
    }, {
-     "year": new Date(1995, 0, 1),
+     "year": new Date(1995, 0),
      "co2Emissions": 7.79,
      "co2Concentration": 360.80,
      "tempC": 14.239,
      "tempF": 57.630
    }, {
-     "year": new Date(2000, 0, 1),
+     "year": new Date(2000, 0),
      "co2Emissions": 7.79,
      "co2Concentration": 369.52,
      "tempC": 14.401,
      "tempF": 57.922
    }, {
-     "year": new Date(2005, 0, 1),
+     "year": new Date(2005, 0),
      "co2Emissions": 8.93,
      "co2Concentration": 379.80,
      "tempC": 14.471,
      "tempF": 58.048
    }, {
-     "year": new Date(2010, 0, 1),
+     "year": new Date(2010, 0),
      "co2Emissions": 9.84,
      "co2Concentration": 389.85,
      "tempC": 14.451,
@@ -168,10 +169,10 @@ handlePause = event => {
     const baselineCO2Concentration = currentData[currentDataSize - 1].co2Concentration;
 
 
-    let currentDateSet =  new Date(baselineYear + 5, 0, 1); //5yr interavals set
+    let currentDateSet =  new Date(baselineYear + 5, 0); //5yr interavals set
     let currentYearSet = currentDateSet.getFullYear();
     const atmosphericFraction = 0.45; //45% standard
-    const co2RemovalRate = 0.001; //0.1% per year
+    //const co2RemovalRate = 0.001; //0.1% per year
     let GtC_per_ppmv = 2.3; // GtC (approx. 2.3 GtC per 1 ppmv)
     let atomosphereCO2Increase = (1 - atmosphericFraction) * currentEmissionRate;
 
@@ -248,12 +249,21 @@ handlePause = event => {
     
     // Create axes
     let categoryAxis = chart.xAxes.push(new am4charts.DateAxis());
-    categoryAxis.renderer.grid.template.location = 0;
+    categoryAxis.renderer.grid.template.location = 0.5;
     categoryAxis.renderer.minGridDistance = 40;
     categoryAxis.dateFormats.setKey("yyyy");
-    categoryAxis.renderer.labels.template.location = 0;
+    categoryAxis.renderer.labels.template.location = 0.5;
     categoryAxis.renderer.labels.template.fontSize = 12;
-    //categoryAxis.renderer.labels.template.rotation = -90;
+    //categoryAxis.renderer.labels.template.rotation = -45;
+    categoryAxis.fillRule = function(dataItem) {
+      var date = new Date(dataItem.value);
+      if (date.getFullYear() >= 1960 || date.getFullYear() <= 2010) {
+        dataItem.axisFill.visible = true;
+      }
+      else {
+        dataItem.axisFill.visible = false;
+      }
+    }
     
     
 
@@ -265,7 +275,7 @@ handlePause = event => {
       series.dataFields.valueY = field;
       series.dataFields.dateX = "year";
       series.name = name;
-      series.tooltipText = "[bold]{name}:[/] {valueY}" ;
+      series.tooltipText = "[bold]{name}:[/] {valueY.formatNumber('###.00')}" ;
       series.strokeWidth = 2;
       series.yAxis = valueAxis;
       series.stroke = bulletOutline;
@@ -333,14 +343,21 @@ handlePause = event => {
 
       /* Create Warning Limit Guides
       var limitGuide = valueAxis.axisRanges.create();
-          limitGuide.value = 14.1;
-          limitGuide.grid.stroke = "orange"
+          limitGuide.value = 14.3;
+          limitGuide.grid.stroke = "red"
           limitGuide.grid.strokeOpacity = 0.6;
-          limitGuide.label.text = "RTL";
+          limitGuide.label.text = "Recommended Temperature Limit";
           limitGuide.label.align = "right";
-          limitGuide.label.verticalCenter = "bottom";
-          limitGuide.label.fillOpacity = 0.8;*/
-
+          limitGuide.label.verticalCenter = "top";
+          limitGuide.label.horizontalCenter = "middle";
+          limitGuide.label.fill = "red";
+          limitGuide.label.fillOpacity = 0.8;
+          limitGuide.label.dx = 140;*/
+      
+      /*let label = chart.createChild(am4core.Label);
+          label.text = "Hello world!";
+          label.fontSize = 20;
+          label.align = "center";*/
     }
     
     createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#007bff", "triangle");
@@ -491,7 +508,14 @@ triggeredComponentUpdate() {
                   </Button>
                 </div>
                 }
-
+                <br/>
+                <p className="sidebar-title">Show data table:</p>
+                <FormControlLabel
+                    value="displayDataTable"
+                    control={<Checkbox color="primary" checked={this.state.displayDataTable} onChange={this.handleGraphsToDisplay} />}
+                    label="Data Table"
+                    onChange={this.handleGraphsToDisplay}
+                />
                 </div>
             </div>
             {/*<GraphArea data={this.state.data} />*/}
@@ -501,8 +525,11 @@ triggeredComponentUpdate() {
                 </div>
             </div>
 
-            <div className="row data-wrap">
-              <DataTable data={this.state.data} />
+            <div className="data-wrap col-sm-12">
+              {this.state.displayDataTable
+                ? <DataTable data={this.state.data} />
+                : null
+              }
             </div>
           </div>
       );

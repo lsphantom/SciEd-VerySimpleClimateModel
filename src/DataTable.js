@@ -9,14 +9,14 @@ render() {
     return (
         <div className="base-panel data-table">
             <h3>Data Table</h3>
-            <table className="table table-responsive">
+            <table className="table">
             <thead>
                 <tr>
-                    <td>Year</td>
-                    <td>CO2 Conc.</td>
-                    <td>CO2 Emiss.</td>
-                    <td>Temp &deg;C</td>
-                    <td>Temp &deg;F</td>
+                    <th>Year</th>
+                    <th>CO2 Conc.</th>
+                    <th>CO2 Emiss.</th>
+                    <th>Temp &deg;C</th>
+                    <th>Temp &deg;F</th>
                 </tr>
             </thead>
             <tbody>
