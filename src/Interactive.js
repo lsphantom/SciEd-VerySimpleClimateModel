@@ -119,6 +119,9 @@ class Interactive extends Component {
 //Change Temperature Scale
 handleTSChange = event => {
     this.setState({tempScaleCelsius: !this.state.tempScaleCelsius});
+    this.chart.series.removeIndex(2);
+    
+    this.triggeredComponentUpdate();
 }
 //Change Emission Rate
 handleERChange = (event, newValue) => {
@@ -159,6 +162,7 @@ handlePause = event => {
 
 /**** ADD NEW DATA */
   addSingleDataPoint () {
+    console.log('Add single data point start');
     const currentData = this.state.data;
     const currentEmissionRate = this.state.emissionRate;
     const currentClimateSensitivity = this.state.climateSensitivity;
@@ -224,9 +228,9 @@ handlePause = event => {
   }
 
 
-  stepForwardInteraction() {
+  /*stepForwardInteraction() {
     this.addSingleDataPoint();
-  }
+  }*/
 
   playInteraction() {
     this.addSingleDataPoint();
@@ -234,7 +238,9 @@ handlePause = event => {
   }
 
 
+addSeries() {
 
+}
 
   
 
@@ -482,7 +488,7 @@ triggeredComponentUpdate() {
                 { this.state.ready
                 ?
                 <div className="sidebar-buttons">
-                  <Button className="skip-button" onClick={() => this.stepForwardInteraction()} variant="contained" color="primary" title="Step Forward">
+                  <Button className="skip-button" onClick={() => this.addSingleDataPoint()} variant="contained" color="primary" title="Step Forward">
                       <SkipNextIcon />
                   </Button>
 
