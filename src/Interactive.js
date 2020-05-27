@@ -112,14 +112,20 @@ class Interactive extends Component {
      "co2Concentration": 389.85,
      "tempC": 14.451,
      "tempF": 58.012
-   }]
+   }, {
+    "year": new Date(2015, 0),
+    "co2Emissions": 10.34,
+    "co2Concentration": 399.40,
+    "tempC": 14.650,
+    "tempF": 58.370
+  }]
   }
 
 //**** SIDEBAR HANDLES */
 //Change Temperature Scale
 handleTSChange = event => {
     this.setState({tempScaleCelsius: !this.state.tempScaleCelsius});
-    this.chart.series.removeIndex(2);
+    //this.chart.series.removeIndex(2);
     
     this.triggeredComponentUpdate();
 }
@@ -142,14 +148,21 @@ valuetext(value) {
 //Change Play/Pause Buttons
 handlePlay = event => {
   this.setState({running: true});
-  this.playInteraction();
+  this.playInteraction(true);
 }
 handlePause = event => {
   this.setState({running: false});
+  this.playInteraction(false);
+}
+handleReset = event => {
+  this.handlePause();
+  this.resetVisuals();
 }
 
 //**** TEMP SCALE CONVERSIONS */
-  changeTempScale () {}
+  changeTempScale () {
+
+  }
   // C to F
   celsiusToFarenheit (value) {
     return (value * 9/5) + 32;
@@ -162,7 +175,6 @@ handlePause = event => {
 
 /**** ADD NEW DATA */
   addSingleDataPoint () {
-    console.log('Add single data point start');
     const currentData = this.state.data;
     const currentEmissionRate = this.state.emissionRate;
     const currentClimateSensitivity = this.state.climateSensitivity;
@@ -184,8 +196,6 @@ handlePause = event => {
     let calculatedTemp = baselineTemp + currentClimateSensitivity * Math.log2 (calculatedCO2Concentration / baselineCO2Concentration);
     let calculatedTempF = this.celsiusToFarenheit(calculatedTemp);
 
-    //console.log(14.471 + currentClimateSensitivity * Math.log2());
-
     let newDataPoint = {
         "year": currentDateSet,
         "co2Emissions": currentEmissionRate,
@@ -202,12 +212,12 @@ handlePause = event => {
       });
     }
     else {
+      this.playInteraction(false);
       this.setState({
         ready: false,
         running: false,
-      })
+      });
     }
-
 
     //Write to visualization
     this.triggeredComponentUpdate();
@@ -217,7 +227,7 @@ handlePause = event => {
   resetVisuals(){
     //delete data and return to first 50 years (10 data points)
     let finalData = this.state.data;
-        finalData.length = 11;
+        finalData.length = 12;
     //return only historic points and restore buttons
     this.setState({
       data: finalData,
@@ -227,14 +237,13 @@ handlePause = event => {
     this.triggeredComponentUpdate();
   }
 
-
-  /*stepForwardInteraction() {
-    this.addSingleDataPoint();
-  }*/
-
-  playInteraction() {
-    this.addSingleDataPoint();
-    setTimeout(() => this.playInteraction(), 1000);
+  playInteraction(action) {
+    //True = Play, False = Pause
+    if (action){
+      this.timerID = setInterval(() => this.addSingleDataPoint(), 1000);
+    } else {
+      clearInterval(this.timerID);
+    }
   }
 
 
@@ -249,11 +258,12 @@ addSeries() {
   
     // Create chart instance
     let chart = am4core.create("chartdiv", am4charts.XYChart);
+    chart.paddingTop = 20;
     
     // Initial data
     chart.data = this.state.data;
     
-    // Create axes
+    // Create Date Axes (X = categoryAxis)
     let categoryAxis = chart.xAxes.push(new am4charts.DateAxis());
     categoryAxis.renderer.grid.template.location = 0.5;
     categoryAxis.renderer.minGridDistance = 40;
@@ -274,28 +284,45 @@ addSeries() {
     
 
     // Create series
-    function createSeriesAndAxis(field, name, topMargin, bottomMargin, bulletOutline, bulletFill, bulletType) {
-      var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+    function createSeriesAndAxis(field, name, topMargin, bottomMargin, bulletOutline, bulletFill, label) {
+      // Create Value Axes (Y = valueAxis)
+      var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());   
       
       var series = chart.series.push(new am4charts.LineSeries());
       series.dataFields.valueY = field;
       series.dataFields.dateX = "year";
       series.name = name;
-      series.tooltipText = "[bold]{name}:[/] {valueY.formatNumber('###.00')}" ;
+      series.label = label;
+      //series.tooltipText = "[bold]{name}:[/] {valueY.formatNumber('###.00')} {label}" ;
+      series.tooltipText = `[bold]${name}:[/] {valueY.formatNumber('###.00')} ${label}`;
       series.strokeWidth = 2;
       series.yAxis = valueAxis;
       series.stroke = bulletOutline;
       series.fill = bulletFill;
+
+      series.events.on("hidden", toggleAxes);
+      series.events.on("shown", toggleAxes);
       
       valueAxis.renderer.line.strokeOpacity = 1;
       valueAxis.renderer.line.stroke = series.stroke;
       valueAxis.renderer.grid.template.stroke = series.stroke;
       valueAxis.renderer.grid.template.strokeOpacity = 0.1;
       valueAxis.renderer.labels.template.fill = series.stroke;
-      valueAxis.renderer.minGridDistance = 50;
       valueAxis.renderer.labels.template.fontSize = 12;
+      
+      /* Set up axis title*/
+      valueAxis.title.text = `${label}`;
+      valueAxis.title.fill = bulletFill;
+      valueAxis.title.align = "absolute";
+      valueAxis.title.fontSize = 10;
+      valueAxis.title.rotation = 0;
+      valueAxis.title.align = "right";
+      valueAxis.title.valign = "bottom";
+      valueAxis.title.dy = -480;
+      valueAxis.title.dx = 30;
+      valueAxis.title.fontWeight = 600;
+
       valueAxis.align = "right";
-      //valueAxis.min = 0;
       
       if (topMargin && bottomMargin) {
         valueAxis.marginTop = 10;
@@ -310,29 +337,31 @@ addSeries() {
         }
       }
 
-      switch (bulletType) {
-        case "circle":
+      function toggleAxes(ev) {
+        let axis = ev.target.yAxis;
+        let disabled = true;
+        axis.series.each(function(series) {
+          if (!series.isHiding && !series.isHidden) {
+            disabled = false;
+          }
+        });
+        axis.disabled = disabled;
+      }
+
+
+      switch (field) {
+        case "co2Emissions":
           var bullet = series.bullets.push(new am4charts.CircleBullet());
           bullet.circle.stroke = am4core.color(bulletOutline);
           bullet.circle.fill = bulletFill;
           bullet.circle.strokeWidth = 2;
+          valueAxis.max = 30;
+          valueAxis.renderer.grid.template.disabled = true;
         break;
 
-        case "square":
+        case "co2Concentration":
           var bullet2 = series.bullets.push(new am4charts.Bullet());
-          let square = bullet2.createChild(am4core.Rectangle);
-          square.width = 8;
-          square.height = 8;
-          square.horizontalCenter = "middle";
-          square.verticalCenter = "middle";
-          square.stroke = bulletOutline;
-          square.fill = bulletFill;
-          square.strokeWidth = 2;
-        break;
-
-        case "triangle":
-          var bullet3 = series.bullets.push(new am4charts.Bullet());
-          let arrow = bullet3.createChild(am4core.Triangle);
+          let arrow = bullet2.createChild(am4core.Triangle);
           arrow.width = 10;
           arrow.height = 10;
           arrow.horizontalCenter = "middle";
@@ -340,39 +369,95 @@ addSeries() {
           arrow.stroke = bulletOutline;
           arrow.fill = bulletFill;
           arrow.strokeWidth = 2;
+          valueAxis.max = 800;
+          valueAxis.renderer.grid.template.disabled = true;
         break;
+
+
+        case "tempC":
+          var bullet3 = series.bullets.push(new am4charts.Bullet());
+          let square = bullet3.createChild(am4core.Rectangle);
+          square.width = 8;
+          square.height = 8;
+          square.horizontalCenter = "middle";
+          square.verticalCenter = "middle";
+          square.stroke = bulletOutline;
+          square.fill = bulletFill;
+          square.strokeWidth = 2;
+          valueAxis.max = 18;
+          valueAxis.renderer.grid.template.disabled = false;
+          valueAxis.renderer.labels.template.fill = series.fill;
+                    
+                    /* Recommended Temperature Limit Guide */
+                    var limitGuide = valueAxis.axisRanges.create();
+                        limitGuide.value = 15.8;
+                        limitGuide.grid.stroke = am4core.color("red");
+                        limitGuide.label.fill = am4core.color("red");
+                        limitGuide.grid.strokeOpacity = 0.6;
+                        limitGuide.grid.strokeWidth = 12;
+                        limitGuide.grid.above = true;
+                        limitGuide.label.text = "Recommended Temperature Limit";
+                        limitGuide.label.align = "right";
+                        limitGuide.label.inside = true;
+                        limitGuide.label.verticalCenter = "bottom";
+                        limitGuide.label.horizontalCenter = "right";
+                        limitGuide.label.fillOpacity = 0.7;
+        break;
+
+        case "tempF":
+          var bullet4 = series.bullets.push(new am4charts.Bullet());
+          let square2 = bullet4.createChild(am4core.Rectangle);
+          square2.width = 8;
+          square2.height = 8;
+          square2.horizontalCenter = "middle";
+          square2.verticalCenter = "middle";
+          square2.stroke = bulletOutline;
+          square2.fill = bulletFill;
+          square2.strokeWidth = 2;
+          valueAxis.max = 64.4;
+          valueAxis.renderer.grid.template.disabled = false;
+          valueAxis.renderer.labels.template.fill = series.fill;
+                    
+                    /* Recommended Temperature Limit Guide */
+                    var limitGuideF = valueAxis.axisRanges.create();
+                        limitGuideF.value = 60.44;
+                        limitGuideF.grid.stroke = am4core.color("red");
+                        limitGuideF.label.fill = am4core.color("red");
+                        limitGuideF.grid.strokeOpacity = 0.6;
+                        limitGuideF.grid.strokeWidth = 12;
+                        limitGuideF.grid.above = true;
+                        limitGuideF.label.text = "Recommended Temperature Limit";
+                        limitGuideF.label.align = "right";
+                        limitGuideF.label.inside = true;
+                        limitGuideF.label.verticalCenter = "bottom";
+                        limitGuideF.label.horizontalCenter = "right";
+                        limitGuideF.label.fillOpacity = 0.7;
+        break;
+        
 
         default:
         break;
       }
 
 
-      /* Create Warning Limit Guides
-      var limitGuide = valueAxis.axisRanges.create();
-          limitGuide.value = 14.3;
-          limitGuide.grid.stroke = "red"
-          limitGuide.grid.strokeOpacity = 0.6;
-          limitGuide.label.text = "Recommended Temperature Limit";
-          limitGuide.label.align = "right";
-          limitGuide.label.verticalCenter = "top";
-          limitGuide.label.horizontalCenter = "middle";
-          limitGuide.label.fill = "red";
-          limitGuide.label.fillOpacity = 0.8;
-          limitGuide.label.dx = 140;*/
-      
-      /*let label = chart.createChild(am4core.Label);
-          label.text = "Hello world!";
-          label.fontSize = 20;
-          label.align = "center";*/
+
+
+      //Add range for historic data background
+      let range = categoryAxis.axisRanges.create();
+      range.date = new Date(1962, 5);
+      range.endDate = new Date(2017, 5);
+      range.axisFill.fill = am4core.color("#a6d1ff");
+      range.axisFill.fillOpacity = 0.1;
+      range.grid.strokeOpacity = 0;
     }
     
-    createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#007bff", "triangle");
-    createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "circle");
+    createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#007bff", "GtC");
+    createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "ppm");
 
     if (this.state.tempScaleCelsius) {
-      createSeriesAndAxis("tempC", "Temperature", true, false, "#6a124f", "#ff0000", "square");
+      createSeriesAndAxis("tempC", "Temperature", true, false, "#6a124f", "#ff0000", "°C");
     } else {
-      createSeriesAndAxis("tempF", "Temperature", true, false, "#6a124f", "#ff0000", "square");
+      createSeriesAndAxis("tempF", "Temperature", true, false, "#6a124f", "#ff0000", "°F");
     }
     
 
@@ -384,6 +469,14 @@ addSeries() {
     chart.cursor = new am4charts.XYCursor();
     chart.leftAxesContainer.layout = "horizontal";  
 
+    chart.cursor.xAxis = categoryAxis;
+chart.cursor.fullWidthLineX = true;
+chart.cursor.lineX.strokeWidth = 0;
+chart.cursor.lineX.fill = am4core.color("#8F3985");
+chart.cursor.lineX.fillOpacity = 0.1;
+
+chart.cursor.yAxis = chart.valueAxis;
+chart.cursor.lineY.disabled = false;
 
     this.chart = chart;
 }
@@ -444,7 +537,7 @@ triggeredComponentUpdate() {
                 </Typography>
                 </div>
 
-                <div className="sidebar-block">
+                {/*<div className="sidebar-block">
                 <p className="sidebar-title">Choose the graphs <br/>you want to see:</p>
                 <FormControlLabel
                     value="displayEmissions"
@@ -463,7 +556,7 @@ triggeredComponentUpdate() {
                     label="Temperature"
                     onChange={this.handleGraphsToDisplay}
                 />
-                </div>
+      </div>*/}
                 
 
                 <div className="sidebar-block">
@@ -503,13 +596,13 @@ triggeredComponentUpdate() {
                   </Button>
                   }
   
-                  <Button className="reset-button" onClick={(event) => this.resetVisuals(event)} variant="contained" color="primary" title="Start Over">
+                  <Button className="reset-button" onClick={(event) => this.handleReset(event)} variant="contained" color="primary" title="Start Over">
                       <RotateLeft />
                   </Button>
                 </div>
                 :
                 <div className="sidebar-buttons">
-                  <Button className="reset-button" onClick={(event) => this.resetVisuals(event)} variant="contained" color="primary" title="Start Over">
+                  <Button className="reset-button" onClick={(event) => this.handleReset(event)} variant="contained" color="primary" title="Start Over">
                     <RotateLeft /> Start Over
                   </Button>
                 </div>
