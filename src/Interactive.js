@@ -42,9 +42,9 @@ class Interactive extends Component {
     tempScaleCelsius: true,
     emissionRate: 10.5,
     climateSensitivity: 3,
-    displayEmissions: true,
-    displayCO2: true,
-    displayTemperature: true,
+    displayEmissionsSeries: true,
+    displayCO2Series: true,
+    displayTempSeries: true,
     displayDataTable: true,
     data : [{
      "year": new Date(1960, 0),
@@ -135,8 +135,48 @@ handleERChange = (event, newValue) => {
 }
 //Choose Graphs to Display
 handleGraphsToDisplay = (event) => {
-  this.setState({[event.target.value]: event.target.checked})
+  this.setState({[event.target.value]: event.target.checked});
+  let checkedValue = event.target.checked;
+  let seriesValue = event.target.value;
+  let seriesID;
+  let tempScaleInCelsius = this.state.tempScaleCelsius;
+
+  //Find series ID and set
+  switch (seriesValue) {
+    case "displayEmissionsSeries":
+      seriesID = "co2Emissions";
+      break;
+    
+    case "displayCO2Series":
+      seriesID = "co2Concentration";
+      break;
+    
+    case "displayTempSeries":
+      if (tempScaleInCelsius) {
+        seriesID = "tempC";
+      } else {
+        seriesID = "tempF";
+      }
+      break;
+    default:
+      break;
+  }
+
+  //Show or hide specific series
+  if (checkedValue) {
+    this.chart.map.getKey(seriesID).show();
+  }
+  else {
+    this.chart.map.getKey(seriesID).hide();
+  }
+  
 }
+
+//Handle Data Table on/off
+handleDataTableDisplay = (event) => {
+  this.setState({[event.target.value]: event.target.checked});
+}
+
 //Change Climate Sensitivity
 handleCSChange = event => {
   this.setState({climateSensitivity: event.target.value});
@@ -289,11 +329,11 @@ addSeries() {
       var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());   
       
       var series = chart.series.push(new am4charts.LineSeries());
+      series.id = field;
       series.dataFields.valueY = field;
       series.dataFields.dateX = "year";
       series.name = name;
       series.label = label;
-      //series.tooltipText = "[bold]{name}:[/] {valueY.formatNumber('###.00')} {label}" ;
       series.tooltipText = `[bold]${name}:[/] {valueY.formatNumber('###.00')} ${label}`;
       series.strokeWidth = 2;
       series.yAxis = valueAxis;
@@ -470,13 +510,13 @@ addSeries() {
     chart.leftAxesContainer.layout = "horizontal";  
 
     chart.cursor.xAxis = categoryAxis;
-chart.cursor.fullWidthLineX = true;
-chart.cursor.lineX.strokeWidth = 0;
-chart.cursor.lineX.fill = am4core.color("#8F3985");
-chart.cursor.lineX.fillOpacity = 0.1;
+    chart.cursor.fullWidthLineX = true;
+    chart.cursor.lineX.strokeWidth = 0;
+    chart.cursor.lineX.fill = am4core.color("#8F3985");
+    chart.cursor.lineX.fillOpacity = 0.1;
 
-chart.cursor.yAxis = chart.valueAxis;
-chart.cursor.lineY.disabled = false;
+    chart.cursor.yAxis = chart.valueAxis;
+    chart.cursor.lineY.disabled = false;
 
     this.chart = chart;
 }
@@ -537,26 +577,26 @@ triggeredComponentUpdate() {
                 </Typography>
                 </div>
 
-                {/*<div className="sidebar-block">
+                <div className="sidebar-block">
                 <p className="sidebar-title">Choose the graphs <br/>you want to see:</p>
-                <FormControlLabel
-                    value="displayEmissions"
-                    control={<Checkbox color="primary" checked={this.state.displayEmissions} onChange={this.handleGraphsToDisplay} />}
-                    label="CO2 Emission Rate"
-                />
-                <FormControlLabel
-                    value="displayCO2"
-                    control={<Checkbox color="primary" checked={this.state.displayCO2} onChange={this.handleGraphsToDisplay} />}
-                    label="CO2 Concentration"
-                    onChange={this.handleGraphsToDisplay}
-                />
-                <FormControlLabel
-                    value="displayTemperature"
-                    control={<Checkbox color="primary" checked={this.state.displayTemperature} onChange={this.handleGraphsToDisplay} />}
-                    label="Temperature"
-                    onChange={this.handleGraphsToDisplay}
-                />
-      </div>*/}
+                    <FormControlLabel
+                        value="displayEmissionsSeries"
+                        control={<Checkbox color="primary" checked={this.state.displayEmissionsSeries} onChange={this.handleGraphsToDisplay} />}
+                        label="Carbon Emissions"
+                    />
+                    <FormControlLabel
+                        value="displayCO2Series"
+                        control={<Checkbox color="primary" checked={this.state.displayCO2Series} onChange={this.handleGraphsToDisplay} />}
+                        label="CO2 Concentration"
+                        onChange={this.handleGraphsToDisplay}
+                    />
+                    <FormControlLabel
+                        value="displayTempSeries"
+                        control={<Checkbox color="primary" checked={this.state.displayTempSeries} onChange={this.handleGraphsToDisplay} />}
+                        label="Temperature"
+                        onChange={this.handleGraphsToDisplay}
+                    />
+                </div>
                 
 
                 <div className="sidebar-block">
@@ -611,9 +651,9 @@ triggeredComponentUpdate() {
                 <p className="sidebar-title">Show data table:</p>
                 <FormControlLabel
                     value="displayDataTable"
-                    control={<Checkbox color="primary" checked={this.state.displayDataTable} onChange={this.handleGraphsToDisplay} />}
+                    control={<Checkbox color="primary" checked={this.state.displayDataTable} onChange={this.handleDataTableDisplay} />}
                     label="Data Table"
-                    onChange={this.handleGraphsToDisplay}
+                    onChange={this.handleDataTableDisplay}
                 />
                 </div>
             </div>
