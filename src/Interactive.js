@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import DataTable from './DataTable';
+//import DataTable from './DataTable';
 
 import Switch from '@material-ui/core/Switch';
 import Slider from '@material-ui/core/Slider';
@@ -124,9 +124,7 @@ class Interactive extends Component {
 //**** SIDEBAR HANDLES */
 //Change Temperature Scale
 handleTSChange = event => {
-    this.setState({tempScaleCelsius: !this.state.tempScaleCelsius});
-    //this.chart.series.removeIndex(2);
-    
+    this.setState({tempScaleCelsius: !this.state.tempScaleCelsius});    
     this.triggeredComponentUpdate();
 }
 //Change Emission Rate
@@ -287,12 +285,6 @@ handleReset = event => {
   }
 
 
-addSeries() {
-
-}
-
-  
-
   componentDidMount(){
     //am4core.useTheme(am4themes_animated);
   
@@ -434,7 +426,7 @@ addSeries() {
                         limitGuide.grid.stroke = am4core.color("red");
                         limitGuide.label.fill = am4core.color("red");
                         limitGuide.grid.strokeOpacity = 0.6;
-                        limitGuide.grid.strokeWidth = 12;
+                        limitGuide.grid.strokeWidth = 2;
                         limitGuide.grid.above = true;
                         limitGuide.label.text = "Recommended Temperature Limit";
                         limitGuide.label.align = "right";
@@ -464,7 +456,7 @@ addSeries() {
                         limitGuideF.grid.stroke = am4core.color("red");
                         limitGuideF.label.fill = am4core.color("red");
                         limitGuideF.grid.strokeOpacity = 0.6;
-                        limitGuideF.grid.strokeWidth = 12;
+                        limitGuideF.grid.strokeWidth = 2;
                         limitGuideF.grid.above = true;
                         limitGuideF.label.text = "Recommended Temperature Limit";
                         limitGuideF.label.align = "right";
@@ -490,22 +482,24 @@ addSeries() {
       range.axisFill.fillOpacity = 0.1;
       range.grid.strokeOpacity = 0;
     }
-    
+
+
+    //CREATE EACH SERIES AND AXIS
     createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#007bff", "GtC");
     createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "ppm");
+    
 
     if (this.state.tempScaleCelsius) {
       createSeriesAndAxis("tempC", "Temperature", true, false, "#6a124f", "#ff0000", "°C");
     } else {
       createSeriesAndAxis("tempF", "Temperature", true, false, "#6a124f", "#ff0000", "°F");
     }
-    
 
     
     chart.legend = new am4charts.Legend();
-    //chart.legend.itemContainers.template.clickable = false;
-    //chart.legend.itemContainers.template.focusable = false;
-    //chart.legend.itemContainers.template.cursorOverStyle = am4core.MouseCursorStyle.default;
+      chart.legend.itemContainers.template.clickable = false;
+      chart.legend.itemContainers.template.focusable = false;
+      chart.legend.itemContainers.template.cursorOverStyle = am4core.MouseCursorStyle.default;
     chart.cursor = new am4charts.XYCursor();
     chart.leftAxesContainer.layout = "horizontal";  
 
@@ -525,9 +519,9 @@ triggeredComponentUpdate() {
   this.chart.data = this.state.data;
 }
 
-/*componentDidUpdate(oldProps) {
+componentDidUpdate(oldProps) {
   this.chart.data = this.state.data;
-}*/
+}
 
 
     render() {
@@ -571,7 +565,8 @@ triggeredComponentUpdate() {
                     max={30}
                     valueLabelDisplay="on"
                     track="inverted"
-                    onChange={this.handleERChange}
+                    //onChange={this.handleERChange}
+                    onChangeCommitted={this.handleERChange}
                 />
                 Gigatons Carbon per Year
                 </Typography>
@@ -648,28 +643,27 @@ triggeredComponentUpdate() {
                 </div>
                 }
                 <br/>
-                <p className="sidebar-title">Show data table:</p>
+                {/*<p className="sidebar-title">Show data table:</p>
                 <FormControlLabel
                     value="displayDataTable"
                     control={<Checkbox color="primary" checked={this.state.displayDataTable} onChange={this.handleDataTableDisplay} />}
                     label="Data Table"
                     onChange={this.handleDataTableDisplay}
-                />
+              />*/}
                 </div>
             </div>
-            {/*<GraphArea data={this.state.data} />*/}
             <div id="graph-area" className="col-sm-8">
                 <div className="base-panel">
                     <div id="chartdiv"></div>
                 </div>
             </div>
 
-            <div className="data-wrap col-sm-12">
+            {/*<div className="data-wrap col-sm-12">
               {this.state.displayDataTable
                 ? <DataTable data={this.state.data} />
                 : null
               }
-            </div>
+            </div>*/}
           </div>
       );
     }
