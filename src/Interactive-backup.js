@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import DataTable from './DataTable';
+//import DataTable from './DataTable';
 
 import Switch from '@material-ui/core/Switch';
 import Slider from '@material-ui/core/Slider';
@@ -20,7 +20,6 @@ import Select from '@material-ui/core/Select';
 
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
-//import { func } from 'prop-types';
 //import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 
 
@@ -126,12 +125,8 @@ class Interactive extends Component {
 //Change Temperature Scale
 handleTSChange = event => {
     this.setState({tempScaleCelsius: !this.state.tempScaleCelsius});
-    //this.removeSeries();
-    if(this.state.tempScaleCelsius){
-      this.switchToFarenheit();
-    } else {
-      this.switchToCelsius();
-    }    
+    
+    //this.triggeredComponentUpdate();
 }
 //Change Emission Rate
 handleERChange = (event, newValue) => {
@@ -143,6 +138,7 @@ handleGraphsToDisplay = (event) => {
   let checkedValue = event.target.checked;
   let seriesValue = event.target.value;
   let seriesID;
+  let tempScaleInCelsius = this.state.tempScaleCelsius;
 
   //Find series ID and set
   switch (seriesValue) {
@@ -155,9 +151,12 @@ handleGraphsToDisplay = (event) => {
       break;
     
     case "displayTempSeries":
-      seriesID = "tempC";
+      if (tempScaleInCelsius) {
+        seriesID = "tempC";
+      } else {
+        seriesID = "tempF";
+      }
       break;
-
     default:
       break;
   }
@@ -280,30 +279,6 @@ handleReset = event => {
       this.timerID = setInterval(() => this.addSingleDataPoint(), 1000);
     } else {
       clearInterval(this.timerID);
-    }
-  }
-
-
-  switchToFarenheit(){
-    this.chart.series.getIndex(2).dataFields.valueY = "tempF";
-    this.chart.series.getIndex(2).label = "°F";
-    this.chart.series.getIndex(2).tooltipText = `[bold]Temperature:[/] {valueY.formatNumber('###.00')} °F`;
-    this.chart.yAxes.values[2].title.text = "°F";
-    this.chart.yAxes.values[2].max = 64.4;
-    this.chart.yAxes.values[2].axisRanges.values[0].values.value.value = 60.44;
-    console.log(this.chart.yAxes.values[2].axisRanges.values[0].values.value.value);// = "°F";
-  }
-  switchToCelsius(){
-    this.chart.series.getIndex(2).dataFields.valueY = "tempC";
-    this.chart.series.getIndex(2).label = "°C";
-    this.chart.series.getIndex(2).tooltipText = `[bold]Temperature:[/] {valueY.formatNumber('###.00')} °C`;
-    this.chart.yAxes.values[2].title.text = "°C";
-    this.chart.yAxes.values[2].max = 18;
-    this.chart.yAxes.values[2].axisRanges.values[0].values.value.value = 15.8;
-  }
-  removeSeries(){
-    if (this.chart.series.length > 2) {
-      this.chart.series.removeIndex(2).dispose();
     }
   }
 
@@ -487,30 +462,38 @@ handleReset = event => {
                         limitGuideF.label.verticalCenter = "bottom";
                         limitGuideF.label.horizontalCenter = "right";
                         limitGuideF.label.fillOpacity = 0.7;
-        break;        
+        break;
+        
 
         default:
         break;
       }
 
 
-    }
 
-      
-    
+
+      //Add range for historic data background
+      let range = categoryAxis.axisRanges.create();
+      range.date = new Date(1962, 5);
+      range.endDate = new Date(2017, 5);
+      range.axisFill.fill = am4core.color("#a6d1ff");
+      range.axisFill.fillOpacity = 0.1;
+      range.grid.strokeOpacity = 0;
+    }
 
 
     //CREATE EACH SERIES AND AXIS
     createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#007bff", "GtC");
-    createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "ppm");   
+    createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "ppm");
+    
 
     if (this.state.tempScaleCelsius) {
       createSeriesAndAxis("tempC", "Temperature", true, false, "#6a124f", "#ff0000", "°C");
     } else {
-      createSeriesAndAxis("tempF", "", true, false, "#6a124f", "#ff0000", "°F");
+      createSeriesAndAxis("tempF", "Temperature", true, false, "#6a124f", "#ff0000", "°F");
     }
 
-    //Chart legends
+    
     chart.legend = new am4charts.Legend();
       chart.legend.itemContainers.template.clickable = false;
       chart.legend.itemContainers.template.focusable = false;
@@ -526,20 +509,7 @@ handleReset = event => {
 
     chart.cursor.yAxis = chart.valueAxis;
     chart.cursor.lineY.disabled = false;
-    
-    //Add range for historic data background
-    let range = categoryAxis.axisRanges.create();
-    range.date = new Date(1962, 5);
-    range.endDate = new Date(2017, 5);
-    range.axisFill.fill = am4core.color("#a6d1ff");
-    range.axisFill.fillOpacity = 0.2;
-    range.grid.strokeOpacity = 0;
 
-
-    //hide inactive temp
-    /*let seriesTempF = chart.map.getKey("tempF");
-        seriesTempF.hide();*/
-    
     this.chart = chart;
 }
 
@@ -551,11 +521,6 @@ componentDidUpdate(oldProps) {
   this.chart.data = this.state.data;
 }
 
-componentWillUnmount() {
-  if (this.chart) {
-    this.chart.dispose();
-  }
-}
 
     render() {
 
@@ -676,13 +641,13 @@ componentWillUnmount() {
                 </div>
                 }
                 <br/>
-                <p className="sidebar-title">Show data table:</p>
+                {/*<p className="sidebar-title">Show data table:</p>
                 <FormControlLabel
                     value="displayDataTable"
                     control={<Checkbox color="primary" checked={this.state.displayDataTable} onChange={this.handleDataTableDisplay} />}
                     label="Data Table"
                     onChange={this.handleDataTableDisplay}
-              />
+              />*/}
                 </div>
             </div>
             <div id="graph-area" className="col-sm-8">
@@ -691,12 +656,12 @@ componentWillUnmount() {
                 </div>
             </div>
 
-            <div className="data-wrap col-sm-12">
+            {/*<div className="data-wrap col-sm-12">
               {this.state.displayDataTable
                 ? <DataTable data={this.state.data} />
                 : null
               }
-            </div>
+            </div>*/}
           </div>
       );
     }
