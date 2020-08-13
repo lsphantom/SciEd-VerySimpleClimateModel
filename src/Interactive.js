@@ -131,7 +131,7 @@ handleTSChange = event => {
       this.switchToFarenheit();
     } else {
       this.switchToCelsius();
-    }    
+    }
 }
 //Change Emission Rate
 handleERChange = (event, newValue) => {
@@ -149,11 +149,11 @@ handleGraphsToDisplay = (event) => {
     case "displayEmissionsSeries":
       seriesID = "co2Emissions";
       break;
-    
+
     case "displayCO2Series":
       seriesID = "co2Concentration";
       break;
-    
+
     case "displayTempSeries":
       seriesID = "tempC";
       break;
@@ -169,7 +169,7 @@ handleGraphsToDisplay = (event) => {
   else {
     this.chart.map.getKey(seriesID).hide();
   }
-  
+
 }
 
 //Handle Data Table on/off
@@ -225,11 +225,12 @@ handleReset = event => {
     let currentDateSet =  new Date(baselineYear + 5, 0); //5yr interavals set
     let currentYearSet = currentDateSet.getFullYear();
     const atmosphericFraction = 0.45; //45% standard
-    //const co2RemovalRate = 0.001; //0.1% per year
+    const co2RemovalRate = 0.001; //0.1% per year
     let GtC_per_ppmv = 2.3; // GtC (approx. 2.3 GtC per 1 ppmv)
     let atomosphereCO2Increase = (1 - atmosphericFraction) * currentEmissionRate;
 
-    let calculatedCO2Concentration = baselineCO2Concentration + (atomosphereCO2Increase / GtC_per_ppmv) * 5; //Multiply by 5yr interval
+    let timeStep =  5; //years
+    let calculatedCO2Concentration = (baselineCO2Concentration * (1-(co2RemovalRate * timeStep))) + ((atomosphereCO2Increase / GtC_per_ppmv) * timeStep) ; //Multiply by 5yr interval
     let calculatedTemp = baselineTemp + currentClimateSensitivity * Math.log2 (calculatedCO2Concentration / baselineCO2Concentration);
     let calculatedTempF = this.celsiusToFarenheit(calculatedTemp);
 
@@ -241,7 +242,7 @@ handleReset = event => {
         "tempF": calculatedTempF
     }
 
-    
+
     //Max date 2100
     if (currentYearSet <= 2100) {
       this.setState({
@@ -310,14 +311,14 @@ handleReset = event => {
 
   componentDidMount(){
     //am4core.useTheme(am4themes_animated);
-  
+
     // Create chart instance
     let chart = am4core.create("chartdiv", am4charts.XYChart);
     chart.paddingTop = 20;
-    
+
     // Initial data
     chart.data = this.state.data;
-    
+
     // Create Date Axes (X = categoryAxis)
     let categoryAxis = chart.xAxes.push(new am4charts.DateAxis());
     categoryAxis.renderer.grid.template.location = 0.5;
@@ -335,14 +336,14 @@ handleReset = event => {
         dataItem.axisFill.visible = false;
       }
     }
-    
-    
+
+
 
     // Create series
     function createSeriesAndAxis(field, name, topMargin, bottomMargin, bulletOutline, bulletFill, label) {
       // Create Value Axes (Y = valueAxis)
-      var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());   
-      
+      var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+
       var series = chart.series.push(new am4charts.LineSeries());
       series.id = field;
       series.dataFields.valueY = field;
@@ -357,14 +358,14 @@ handleReset = event => {
 
       series.events.on("hidden", toggleAxes);
       series.events.on("shown", toggleAxes);
-      
+
       valueAxis.renderer.line.strokeOpacity = 1;
       valueAxis.renderer.line.stroke = series.stroke;
       valueAxis.renderer.grid.template.stroke = series.stroke;
       valueAxis.renderer.grid.template.strokeOpacity = 0.1;
       valueAxis.renderer.labels.template.fill = series.stroke;
       valueAxis.renderer.labels.template.fontSize = 12;
-      
+
       /* Set up axis title*/
       valueAxis.title.text = `${label}`;
       valueAxis.title.fill = bulletFill;
@@ -378,7 +379,7 @@ handleReset = event => {
       valueAxis.title.fontWeight = 600;
 
       valueAxis.align = "right";
-      
+
       if (topMargin && bottomMargin) {
         valueAxis.marginTop = 10;
         valueAxis.marginBottom = 10;
@@ -425,6 +426,7 @@ handleReset = event => {
           arrow.fill = bulletFill;
           arrow.strokeWidth = 2;
           valueAxis.max = 800;
+          //valueAxis.min = 0;
           valueAxis.renderer.grid.template.disabled = true;
         break;
 
@@ -442,7 +444,7 @@ handleReset = event => {
           valueAxis.max = 18;
           valueAxis.renderer.grid.template.disabled = false;
           valueAxis.renderer.labels.template.fill = series.fill;
-                    
+
                     /* Recommended Temperature Limit Guide */
                     var limitGuide = valueAxis.axisRanges.create();
                         limitGuide.value = 15.8;
@@ -472,7 +474,7 @@ handleReset = event => {
           valueAxis.max = 64.4;
           valueAxis.renderer.grid.template.disabled = false;
           valueAxis.renderer.labels.template.fill = series.fill;
-                    
+
                     /* Recommended Temperature Limit Guide */
                     var limitGuideF = valueAxis.axisRanges.create();
                         limitGuideF.value = 60.44;
@@ -487,7 +489,7 @@ handleReset = event => {
                         limitGuideF.label.verticalCenter = "bottom";
                         limitGuideF.label.horizontalCenter = "right";
                         limitGuideF.label.fillOpacity = 0.7;
-        break;        
+        break;
 
         default:
         break;
@@ -496,13 +498,13 @@ handleReset = event => {
 
     }
 
-      
-    
+
+
 
 
     //CREATE EACH SERIES AND AXIS
     createSeriesAndAxis("co2Emissions", "Carbon Emissions", false, true, "#007bff", "#007bff", "GtC");
-    createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "ppm");   
+    createSeriesAndAxis("co2Concentration", "CO2 Concentration", true, true, "#444", "#000", "ppm");
 
     if (this.state.tempScaleCelsius) {
       createSeriesAndAxis("tempC", "Temperature", true, false, "#6a124f", "#ff0000", "°C");
@@ -516,7 +518,7 @@ handleReset = event => {
       chart.legend.itemContainers.template.focusable = false;
       chart.legend.itemContainers.template.cursorOverStyle = am4core.MouseCursorStyle.default;
     chart.cursor = new am4charts.XYCursor();
-    chart.leftAxesContainer.layout = "horizontal";  
+    chart.leftAxesContainer.layout = "horizontal";
 
     chart.cursor.xAxis = categoryAxis;
     chart.cursor.fullWidthLineX = true;
@@ -526,7 +528,7 @@ handleReset = event => {
 
     chart.cursor.yAxis = chart.valueAxis;
     chart.cursor.lineY.disabled = false;
-    
+
     //Add range for historic data background
     let range = categoryAxis.axisRanges.create();
     range.date = new Date(1962, 5);
@@ -539,7 +541,7 @@ handleReset = event => {
     //hide inactive temp
     /*let seriesTempF = chart.map.getKey("tempF");
         seriesTempF.hide();*/
-    
+
     this.chart = chart;
 }
 
@@ -565,7 +567,7 @@ componentWillUnmount() {
             <div id="sidebar" className="col-sm-4">
                 <div className="base-panel">
                 <p className="hook-text"><em>What will the temperature be in the future? Make a prediction using this model.</em></p>
-                
+
                 <div className="sidebar-block">
                 <p className="sidebar-title">Temperature scale:</p>
                 <Typography component="div">
@@ -625,7 +627,7 @@ componentWillUnmount() {
                         onChange={this.handleGraphsToDisplay}
                     />
                 </div>
-                
+
 
                 <div className="sidebar-block">
                 <p className="sidebar-title">Change climate sensitivity:</p>
@@ -663,7 +665,7 @@ componentWillUnmount() {
                       <PlayArrowIcon />
                   </Button>
                   }
-  
+
                   <Button className="reset-button" onClick={(event) => this.handleReset(event)} variant="contained" color="primary" title="Start Over">
                       <RotateLeft />
                   </Button>
